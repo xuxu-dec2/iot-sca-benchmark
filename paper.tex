@@ -12,7 +12,7 @@
 \title{A Comparative Security Evaluation of Side-Channel Countermeasures\\for Resource-Constrained IoT Devices}
 \titlerunning{Comparative Evaluation of SCA Countermeasures for IoT}
 
-\author{Xu Xu\inst{1}\orcidID{0009-0000-0000-0000}}
+\author{Xu Xu\inst{1}}
 
 \authorrunning{X. Xu}
 
@@ -22,9 +22,9 @@
 \maketitle
 
 \begin{abstract}
-Side-channel analysis (SCA) poses a critical threat to resource-constrained IoT devices, yet the community lacks a systematic framework for comparing countermeasure effectiveness under controlled conditions. We present a reproducible evaluation of three deep learning architectures (MLP, CNN, ResNet) across three escalating protection levels---boolean masking, masking + 50-cycle desynchronization, and masking + 100-cycle desynchronization---using exclusively public ASCAD datasets. Across 27 controlled runs (fixed hyperparameters, three random seeds), we find that boolean masking alone is trivially bypassed (CNN: GE=1 in 70 traces; MLP: 150 traces), while adding only 50 cycles of random delay neutralizes all architectures within 5,000 traces---a 70$\times$ security gain at near-zero implementation cost. ResNet requires 650$\times$ more training time than MLP (19,470s vs.\ 30s) yet achieves zero successful attacks. We also observe a leakage plateau phenomenon where additional attack traces degrade Guessing Entropy, suggesting principled trace selection as a future attack direction.
+Side-channel analysis (SCA) poses a critical threat to resource-constrained IoT devices, yet the community lacks a systematic framework for comparing countermeasure effectiveness under controlled conditions. We present a reproducible evaluation of three deep learning architectures (MLP, CNN, ResNet) across three escalating protection levels---boolean masking, masking + 50-cycle desynchronization, and masking + 100-cycle desynchronization---using exclusively public ASCAD datasets. Across 27 controlled runs (fixed hyperparameters, three random seeds), we find that boolean masking alone is trivially bypassed (CNN: GE=1 in 70 traces; MLP: 150), while adding only 50 cycles of random delay neutralizes all architectures within 5,000 traces---a 70$\times$ security gain at near-zero cost. ResNet requires 650$\times$ more training time than MLP (19,470s vs.\ 30s) yet achieves zero successful attacks. We also observe a leakage plateau where additional attack traces degrade Guessing Entropy, suggesting principled trace selection as a future attack direction.
 
-\keywords{IoT Security \and Side-Channel Analysis \and Deep Learning \and Countermeasure Evaluation.}
+\keywords{IoT Security \and Side-Channel Analysis \and Deep Learning \and Countermeasure Evaluation}
 \end{abstract}
 
 % ===================================================================
