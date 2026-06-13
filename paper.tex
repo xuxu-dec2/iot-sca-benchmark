@@ -43,15 +43,11 @@ This paper addresses the gap through a controlled evaluation framework. We test 
 
 \subsection{SCA and Deep Learning Attacks}
 
-Side-channel attacks exploit physical leakage---power (SPA/DPA/CPA)~\cite{kocher1999differential,brier2004correlation}, EM emanations~\cite{agrawal2003em}, and timing~\cite{bernstein2005cache}---to recover cryptographic keys. Template attacks~\cite{chari2002template} formalized profiling-based SCA, establishing the two-phase paradigm (profiling on a clone device, then attacking the target). Deep learning revolutionized this approach: Maghrebi et al.~\cite{maghrebi2016breaking} first demonstrated that neural networks outperform classical template attacks on masked AES, and Prouff et al.~\cite{DBLP:journals/iacr/ProuffSRLB18} systematized the methodology with the ASCAD benchmark, establishing CNNs with VGG-inspired architectures as the de facto standard. Masure et al.~\cite{masure2019comprehensive} proved that minimizing negative log-likelihood during training is asymptotically equivalent to maximizing the Perceived Information lower bound on mutual information, formally grounding DL-SCA in information theory. The most comprehensive systematization to date~\cite{picek2023sok} surveyed over 200 papers and identified inconsistent evaluation practices---particularly single-run best-case reporting---as a key weakness we explicitly address.
+Side-channel attacks exploit physical leakage---power (SPA/DPA/CPA)~\cite{kocher1999differential,brier2004correlation}, EM emanations~\cite{agrawal2003em}, and timing~\cite{bernstein2005cache}---to recover cryptographic keys. Template attacks~\cite{chari2002template} formalized profiling-based SCA. Deep learning revolutionized this approach: neural networks outperform classical template attacks on masked AES~\cite{maghrebi2016breaking}, and the ASCAD benchmark~\cite{DBLP:journals/iacr/ProuffSRLB18} established CNNs as the de facto standard. The most comprehensive systematization~\cite{picek2023sok} surveyed over 200 papers and identified inconsistent evaluation practices---particularly single-run best-case reporting---as a key weakness we address.
 
 \subsection{Countermeasure Taxonomy}
 
-\textbf{Masking} splits sensitive variables into $d+1$ shares. Boolean masking represents $x$ as $(x \oplus m, m)$; affine masking~\cite{fumaroli2010affine} extends this to $(\alpha \cdot x \oplus \beta, \alpha, \beta)$. Higher-order masking increases share count but suffers $O(d^2)$ degradation; Bronchain and Standaert~\cite{bronchain2021breaking} showed 6-share AES on Cortex-M0 broken in $< 10$ traces.
-
-\textbf{Hiding} obscures temporal alignment. Random delay insertion (RDI)~\cite{coron2009} inserts $N \in [0, D_{\text{max}}]$ dummy cycles, introducing per-trace jitter at minimal cost. Instruction shuffling~\cite{von2006} permutes independent operations (e.g., AES S-Box lookups). ASCADv1 provides RDI variants at $D_{\text{max}} = 50$ and $D_{\text{max}} = 100$.
-
-\textbf{CNNs and shift-invariance.} While CNNs are assumed inherently robust to desynchronization, Kr\v{c}ek et al.~\cite{krcek2024shift} demonstrated this invariance is limited---data augmentation is necessary for desynchronization exceeding 100 samples. Paguada et al.~\cite{paguada2024systematic} showed augmented CNNs recover keys on ASCAD with 200-sample desync in $< 50$ traces. We deliberately exclude data augmentation to isolate \emph{intrinsic architectural robustness}, establishing a conservative lower bound.
+\textbf{Masking} splits variables into $d+1$ shares (e.g., $x \rightarrow (x \oplus m, m)$); affine masking~\cite{fumaroli2010affine} extends this. Higher-order masking suffers $O(d^2)$ degradation---6-share AES on Cortex-M0 was broken in $< 10$ traces~\cite{bronchain2021breaking}. \textbf{Hiding} obscures temporal alignment via random delay insertion (RDI)~\cite{coron2009} (up to $D_{\text{max}}$ dummy cycles) and instruction shuffling~\cite{von2006}. ASCADv1 provides RDI variants at $D_{\text{max}} = 50$ and 100. \textbf{CNNs and shift-invariance:} while CNNs are assumed robust to desynchronization, this invariance is limited---data augmentation is necessary beyond 100 samples~\cite{krcek2024shift,paguada2024systematic}. We exclude augmentation to isolate \emph{intrinsic architectural robustness}, establishing a conservative lower bound.
 
 % ===================================================================
 \section{Methodology}
@@ -88,11 +84,7 @@ Each condition is independently executed $N{=}3$ times (seeds 42, 142, 242). All
 
 \subsection{Metrics}
 
-\textbf{Guessing Entropy (GE)}: After $N$ attack traces, rank all 256 key byte hypotheses by accumulated log-likelihood $\sum_{i=1}^N \log P(\text{model} \mid \text{SBOX}[p_i \oplus k])$, where $p_i$ is the known plaintext byte. GE$(N)$ is the rank of the correct key (GE=1 = full recovery; GE=128 = expected random). \textbf{Success Rate (SR)}: fraction of runs achieving GE$\leq$1 within 5,000 traces. \textbf{Traces to Recovery (TtR)}: minimum attack traces to reach GE=1.
-
-\subsection{Statistical Approach}
-
-We assess confidence via: (i) \textbf{z-score}: $z = |\bar{x} - 128| / (s / \sqrt{N})$ against the random baseline; $|z| > 3$ gives $p < 0.003$ under normality. (ii) \textbf{CoV}: $s / \bar{x}$ for relative dispersion ($< 5\%$ = deterministic). (iii) \textbf{Leave-one-out bootstrap}: verify no single run flips qualitative conclusions. Conditions with large effect sizes and low variance ($|z| > 3$, CoV $< 10\%$) are well-supported by $N{=}3$; higher-variance findings are reported as exploratory.
+\textbf{Guessing Entropy (GE)}: After $N$ attack traces, rank all 256 key byte hypotheses by accumulated log-likelihood; GE$(N)$ is the correct key's rank (1 = full recovery; 128 = expected random). \textbf{Success Rate (SR)}: fraction of runs achieving GE$\leq$1 within 5,000 traces. \textbf{Traces to Recovery (TtR)}: minimum traces to reach GE=1. \textbf{Confidence}: assessed via z-score ($|z|>3$ gives $p<0.003$), CoV ($<5\%$ = deterministic), and leave-one-out bootstrap; higher-variance findings are reported as exploratory.
 
 % ===================================================================
 \section{Results}
@@ -159,32 +151,22 @@ For 21 of 27 runs, the \emph{best} GE at an intermediate trace count is substant
 
 \subsection{Key Findings}
 
-\textbf{Boolean masking alone is insufficient.} DL-based SCA bypasses first-order masking in 70--150 traces---a 50$\times$+ improvement over classical CPA (thousands to millions of traces on masked implementations~\cite{DBLP:journals/iacr/ProuffSRLB18}).
+\textbf{Boolean masking alone is insufficient.} DL-based SCA bypasses first-order masking in 70--150 traces, a 50$\times$+ improvement over classical CPA~\cite{DBLP:journals/iacr/ProuffSRLB18}. \textbf{Desynchronization is remarkably cost-effective:} 50-cycle jitter provides a 70$\times$ security gain at near-zero cost---the most efficient countermeasure for IoT MCUs.
 
-\textbf{Desynchronization is remarkably cost-effective.} 50-cycle jitter provides a 70$\times$ security gain at near-zero cost, making it the most efficient countermeasure for resource-constrained IoT MCUs. This finding has direct engineering implications: \emph{prioritize temporal obfuscation over masking complexity}.
-
-\textbf{Architecture selection is secondary to alignment.} Under shared hyperparameters, all architectures succeed on aligned traces (except ResNet) and all fail on desynchronized traces. ResNet's $650\times$ training overhead with zero successful attacks challenges the untested assumption that deeper networks benefit SCA. We emphasize these results reflect performance under our fixed hyperparameter configuration; architecture-specific tuning could yield different outcomes.
-
-\textbf{Training methodology dominates architecture selection.} We deliberately excluded data augmentation to measure intrinsic robustness. The gap between our unaugmented CNN desync50 GE=116 and augmented results ($< 50$ traces for GE=1~\cite{paguada2024systematic}) underscores that augmentation is more impactful than architectural sophistication. We recommend data augmentation as a standard component of DL-SCA evaluations targeting hiding countermeasures.
+\textbf{Architecture and training methodology are secondary.} Under shared hyperparameters, all architectures succeed on aligned traces (except ResNet) and all fail on desynchronized traces; ResNet's $650\times$ training overhead with zero successes challenges the assumption that deeper networks benefit SCA. We excluded data augmentation to measure intrinsic robustness---the gap to augmented results ($< 50$ traces~\cite{paguada2024systematic}) underscores that augmentation matters more than architectural complexity.
 
 \subsection{Limitations}
 
-Our study has several limitations. \textbf{Statistical power:} $N{=}3$ runs per condition are sufficient for large effect sizes (MLP determinism, ResNet failure) but insufficient to confirm the leakage plateau phenomenon; we recommend $N \geq 5$ for future work. \textbf{Dataset coverage:} results are limited to ASCADv1 (ATmega8515, 8-bit AVR); validation on 32-bit ARM Cortex-M platforms and higher-noise datasets remains open. \textbf{Shared hyperparameters:} fixing identical hyperparameters across architectures enables fair comparison but may disadvantage ResNet, which could benefit from architecture-specific tuning. \textbf{ASCADv2:} affine masking with shuffling (stronger L4 protection) was excluded due to the GF($2^8$) arithmetic required for key enumeration with affine-masked labels. \textbf{Classical baselines:} CPA and template attack results on ASCAD are well-documented~\cite{DBLP:journals/iacr/ProuffSRLB18}; our contribution is the controlled \emph{relative} DL comparison.
+Limitations include: $N{=}3$ runs (sufficient for large effects, insufficient for the leakage plateau); ASCADv1 only (8-bit AVR)---32-bit ARM Cortex-M validation remains open; shared hyperparameters may disadvantage ResNet; ASCADv2 affine masking excluded due to GF($2^8$) key enumeration requirements; classical CPA baselines are well-documented elsewhere~\cite{DBLP:journals/iacr/ProuffSRLB18}.
 
 % ===================================================================
 \section{Conclusion}
 % ===================================================================
 
-We presented a systematic, reproducible evaluation of SCA countermeasures for resource-constrained IoT devices. Across 27 controlled runs on public ASCAD datasets, we quantified the security impact of incremental countermeasure upgrades under identical conditions. Our central finding is that 50-cycle random desynchronization provides a 70$\times$ security gain at near-zero cost---substantially outperforming boolean masking alone---making it the most cost-effective software countermeasure for IoT-class MCUs. We further demonstrated that ResNet offers no advantage over simpler architectures under fair comparison, and identified a leakage plateau phenomenon where additional attack traces degrade performance, suggesting principled trace selection as a promising attack direction. All code, hyperparameters, and experimental data are documented for full reproducibility in the accompanying artifact repository.
+We presented a systematic evaluation of SCA countermeasures for resource-constrained IoT devices. Across 27 controlled runs on public ASCAD datasets, we find that 50-cycle random desynchronization provides a 70$\times$ security gain at near-zero cost---the most cost-effective software countermeasure for IoT-class MCUs. ResNet offered no advantage over simpler architectures under fair comparison. All code, hyperparameters, and data are documented for full reproducibility.
 
 \subsubsection*{Acknowledgments}
 The authors thank the ANSSI ASCAD project for providing publicly available benchmark datasets.
-
-\subsubsection*{Author Contributions}
-X.X. is the sole author responsible for all aspects of this work: conceptualization, methodology, software, validation, formal analysis, investigation, data curation, writing---original draft, writing---review and editing, and visualization.
-
-\subsubsection*{Conflict of Interest}
-The authors declare no competing interests. All experiments use publicly available datasets and open-source software; no proprietary hardware, data, or funding source influenced the research design or outcomes.
 
 % ===================================================================
 \bibliographystyle{splncs04}
