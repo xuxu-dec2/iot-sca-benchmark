@@ -1,0 +1,20 @@
+# Private/internal files
+paper-private.tex
+supplementary/
+
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.synctex*
+*.fls
+*.fdb_latexmk
+
+# Python
+__pycache__/
+*.pyc
