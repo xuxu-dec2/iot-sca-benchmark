@@ -100,7 +100,7 @@ Table~\ref{tab:results} presents the complete 27-run results matrix.
 \toprule
 \textbf{Model} & \textbf{Dataset} & \textbf{SR} & \textbf{TtR} & \textbf{GE@5k} & \textbf{Time} \\
 \midrule
-MLP    & Fixed    & 3/3 & 150 &   0 & 30s \\
+MLP    & Fixed    & 3/3 & 150 &   1 & 30s \\
 MLP    & Desync50 & 0/3 & N/A & 199 & 25s \\
 MLP    & Desync100& 0/3 & N/A & 253 & 25s \\
 CNN    & Fixed    & 2/3 & 70  &  72 & 237s \\
@@ -121,7 +121,7 @@ CNN achieves the best TtR (mean=70, SR=2/3). MLP is slower (TtR=150) but perfect
 
 Adding 50-cycle random delay prevents key recovery for all architectures. CNN achieves GE=116 at desync50---marginally better than random (128)---but the three runs diverge substantially (64, 122, 163; CoV=34.9\%). At desync100, CNN GE degrades to 233 (worse than random, $z{=}42.9$, $p{<}10^{-6}$). MLP is perfectly deterministic but completely defeated (GE=199, 253 at desync50/100; CoV=0\%). ResNet performs identically across all three protection levels (GE=210/210/218), suggesting it extracts no leakage signal regardless of countermeasure.
 
-Figure~\ref{fig:ge} shows the GE curves (mean across $N{=}3$ runs); per-run values are reported in Section~5.
+Figure~\ref{fig:ge} shows the GE curves (mean across $N{=}3$ runs).
 
 \begin{figure}[t]
 \centering
